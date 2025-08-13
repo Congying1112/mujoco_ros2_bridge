@@ -1,0 +1,37 @@
+# Build and binary output
+/build/
+/bin/
+/lib/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.o
+*.a
+*.so
+*.dll
+*.exe
+*.out
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.user
+*.log
+
+# MuJoCo/GLFW/ROS2 generated
+*.mjb
+*.xml
+*.stl
+*.obj
+*.dae
+*.urdf
+*.sdf
+
+# Misc
+models/
+*.pyc
+__pycache__/
+.DS_Store

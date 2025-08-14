@@ -5,7 +5,7 @@
 #include <functional>
 using namespace std;
 
-ClsMujoco::ClsMujoco(const std::string &model_file) {
+ClsMujoco::ClsMujoco(const std::string &model_file, const std::string &node_name) {
     // load and compile model
     char error[1000] = "Could not load binary model";
     if (model_file.length() > 4 && model_file.substr(model_file.length() - 4) == ".mjb") {
@@ -44,6 +44,13 @@ ClsMujoco::ClsMujoco(const std::string &model_file) {
     mjv_makeScene(model_, &scene_, 2000);
     mjr_makeContext(model_, &context_, mjFONTSCALE_150);
 
+
+    joint_state_msg_.name.resize(model_->nq);
+    joint_state_msg_.position.resize(model_->nq);
+    joint_state_msg_.velocity.resize(model_->nq);
+    joint_state_msg_.effort.resize(model_->nq);
+
+
     // install GLFW mouse and keyboard callbacks
     glfwSetWindowUserPointer(window_, this);
     glfwSetKeyCallback(window_, [](GLFWwindow* w, int key, int sc, int act, int mods) {
@@ -69,23 +76,17 @@ ClsMujoco::~ClsMujoco() {
     glfwTerminate();
 }
 
+// 由于glfw的窗口需要在主线程中运行，故无法在后台线程中直接调用main_loop()。
+// 可直接调用main_loop()阻塞运行，或者另起timer将update_visualization()作为回调函数。
 void ClsMujoco::main_loop() {
-    // std::thread visThread([this]() {
-    //     while (true) {
-    //         // update_visualization();
-    //         std::this_thread::sleep_for(std::chrono::milliseconds(1000 / sim_frequency_));
-    //     }
-    // });
-    // visThread.detach();
     while (!glfwWindowShouldClose(window_)) {
         update_visualization();
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000 / vis_frequency_));
     }
 }
 
 void ClsMujoco::update_visualization() {
     mjtNum simstart = data_->time;
-    while (data_->time - simstart < 1.0/60.0) {
+    while (data_->time - simstart < 1.0/simFrequency_) {
         mj_step(model_, data_);
     }
 
@@ -155,4 +156,37 @@ void ClsMujoco::mouse_move(GLFWwindow* window, double xpos, double ypos) {
 
 void ClsMujoco::scroll(GLFWwindow* window, double xoffset, double yoffset) {
     mjv_moveCamera(model_, mjMOUSE_ZOOM, 0, -0.05*yoffset, &scene_, &camera_);
+}
+
+void ClsMujoco::joint_command_callback(const std_msgs::msg::Float64MultiArray& msg, std::function<void(int, const std::string&)> cb) {
+    if (!model_ || !data_) {
+        cb(1, "MuJoCo model or data is not initialized.");
+        return;
+    }
+
+    if (msg.data.size() != model_->nq) {
+        cb(2, "Received joint command size does not match model's joint count.");
+        return;
+    }
+
+    for (size_t i = 0; i < msg.data.size(); ++i) {
+        data_->ctrl[i] = msg.data[i];
+    }
+    cb(0, ""); // 默认msg为空字符串
+}
+
+void ClsMujoco::get_joint_state(std::function<void(int, sensor_msgs::msg::JointState, const std::string&)> cb) {
+    if (!model_ || !data_) {
+        cb(1, joint_state_msg_, "MuJoCo model or data is not initialized.");
+        return;
+    }
+
+    // Add joint state data to ROS2 message
+    for (int i = 0; i < model_->nq; ++i)
+    {
+        joint_state_msg_.position[i] = data_->qpos[i];
+        joint_state_msg_.velocity[i] = data_->qvel[i];
+        joint_state_msg_.effort[i]   = data_->qfrc_actuator[i];
+    }
+    cb(0, joint_state_msg_, ""); // 默认msg为空字符串
 }

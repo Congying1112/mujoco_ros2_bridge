@@ -16,6 +16,8 @@ ClsMujoco::ClsMujoco(const std::string &model_file, const std::string &node_name
     if (!model_) {
         mju_error("Load model error: %s", error);
         throw std::runtime_error("Failed to load MuJoCo model");
+    } else {
+        cout << "Model with " << model_->nq << " joints has been loaded: " << endl;
     }
 
     // make data
@@ -108,15 +110,27 @@ void ClsMujoco::update_visualization() {
 void ClsMujoco::start_testPositionControl() {
     cout << "[INFO] Starting test position control..." << endl;
     std::thread testThread([this]() {
-        double joint0_pos = 0;
+        double joint_pos = 0.0;
         while (true) {
-            cout << "[INFO] Setting joint 0 to: " << joint0_pos << endl;
-            data_->ctrl[0] = joint0_pos;
-            joint0_pos += 0.1;
+            cout << "[INFO] Setting joints to: " << joint_pos << endl;
+            for (int i = 0; i < model_->nq; i++) {
+                // data_->qpos[i] = joint_pos;
+                // data_->qvel[i] = joint_pos;
+                data_->ctrl[i] = joint_pos;
+            }
+            joint_pos += 0.03;
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
     });
     testThread.detach();
+}
+
+
+void ClsMujoco::set_zero_pos() {
+    cout << "[INFO] Setting zero position..." << endl;
+    for (int i = 0; i < model_->nq; i++) {
+        data_->ctrl[i] = 0.0;
+    }
 }
 
 void ClsMujoco::keyboard(GLFWwindow* window, int key, int scancode, int act, int mods) {

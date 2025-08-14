@@ -21,6 +21,7 @@ ClsMujocoNode::ClsMujocoNode(const std::string &model_file, const std::string &n
     viz_timer_ = this->create_wall_timer(std::chrono::milliseconds(static_cast<int>(1000 / viz_frequency_)),
                                         std::bind(&ClsMujoco::update_visualization, mujoco_));
 
+    mujoco_->set_zero_pos(); // Initialize the MuJoCo model to zero position
     // mujoco_->start_testPositionControl(); // Start the test position control mode
 }
 

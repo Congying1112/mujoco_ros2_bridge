@@ -12,11 +12,7 @@ def generate_launch_description():
             package    = "mujoco_ros2_bridge",
             executable = "mujoco_node",
             output     = "screen",
-            # arguments  = [os.path.join(directory, 'models', 'mujoco', 'humanoid', 'humanoid.xml')],
-            # arguments  = [os.path.join(directory, 'models', 'rf2502_new_3', 'so101_new_calib.xml')],
-            # arguments  = [os.path.join(directory, 'models', 'rf2502_new_3', 'scene.xml')],
             arguments  = [os.path.join(directory, 'models', 'SO101', 'scene.xml')],
-            # arguments  = [os.path.join(directory, 'models', 'SO101', 'so101_new_calib.xml')],
             parameters = [   
                             {"joint_state_topic_name" : "joint_state"},
                             {"joint_command_topic_name" : "joint_commands"},

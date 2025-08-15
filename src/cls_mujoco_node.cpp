@@ -1,7 +1,7 @@
 #include "cls_mujoco_node.hpp"
 
 ClsMujocoNode::ClsMujocoNode(const std::string &model_file, const std::string &node_name)
-    : rclcpp::Node(node_name), mujoco_(std::make_shared<ClsMujoco>(model_file))
+    : rclcpp::Node(node_name), mujoco_(std::make_shared<ClsMujoco>(model_file, node_name))
 {
     // Create joint state publisher and joint command subscriber
     joint_command_subscriber_ = this->create_subscription<std_msgs::msg::Float64MultiArray>("joint_commands", 1,  std::bind(&ClsMujocoNode::joint_command_callback, this, std::placeholders::_1));

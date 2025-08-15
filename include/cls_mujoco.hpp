@@ -11,7 +11,7 @@
 class ClsMujoco
 {
     public:
-        ClsMujoco(const std::string &model_file, const std::string &node_name = "mujoco_node");
+        ClsMujoco(const std::string &model_file, const std::string &name="");
         ~ClsMujoco();
         void main_loop();
         void start_testPositionControl();

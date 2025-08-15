@@ -7,7 +7,7 @@ int main(int argc, char *argv[]) {
         RCLCPP_ERROR(rclcpp::get_logger("mujoco_node"), "Usage: mujoco_node <model_file.xml>");
         return 1;
     }
-    auto node = std::make_shared<ClsMujocoNode>(argv[1]);
+    auto node = argc == 2 ? std::make_shared<ClsMujocoNode>(argv[1]) : std::make_shared<ClsMujocoNode>(argv[1], argv[2]);
     RCLCPP_INFO(rclcpp::get_logger("mujoco_node"), "MuJoCo node started with model file: %s", argv[1]);
     rclcpp::spin(node);
     rclcpp::shutdown();

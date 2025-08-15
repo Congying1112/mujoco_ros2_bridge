@@ -3,15 +3,24 @@
 #include <thread>
 #include <chrono>
 #include <functional>
+#include <filesystem>
 using namespace std;
 
-ClsMujoco::ClsMujoco(const std::string &model_file, const std::string &node_name) {
+ClsMujoco::ClsMujoco(const std::string &model_file, const std::string &name) {
     // load and compile model
     char error[1000] = "Could not load binary model";
-    if (model_file.length() > 4 && model_file.substr(model_file.length() - 4) == ".mjb") {
-        model_ = mj_loadModel(model_file.c_str(), 0);
+    filesystem::path model_path(model_file);
+    if (!filesystem::exists(model_path)) {
+        mju_error("Model file does not exist: %s", model_file.c_str());
+        throw std::runtime_error("Model file does not exist");
+    }
+    if (model_path.extension() == ".mjb") {
+        model_ = mj_loadModel(model_path.c_str(), 0);
+    } else if (model_path.extension() == ".xml") {
+        model_ = mj_loadXML(model_path.c_str(), 0, error, 1000);
     } else {
-        model_ = mj_loadXML(model_file.c_str(), 0, error, 1000);
+        mju_error("Unsupported model file format: %s", model_path.extension().c_str());
+        throw std::runtime_error("Unsupported model file format");
     }
     if (!model_) {
         mju_error("Load model error: %s", error);
@@ -30,7 +39,7 @@ ClsMujoco::ClsMujoco(const std::string &model_file, const std::string &node_name
     }
 
     // create window, make OpenGL context current, request v-sync
-    window_ = glfwCreateWindow(1200, 900, "Visualization", NULL, NULL);
+    window_ = glfwCreateWindow(1200, 900, name == "" ? model_path.stem().string().c_str() : name.c_str(), NULL, NULL);
     if (!window_) throw std::runtime_error("Failed to create GLFW window");
     glfwMakeContextCurrent(window_);
     glfwSwapInterval(1);

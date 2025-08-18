@@ -2,6 +2,8 @@
 /build/
 /bin/
 /lib/
+/log/
+/models/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
@@ -29,6 +31,7 @@ Makefile
 *.dae
 *.urdf
 *.sdf
+MUJOCO_LOG.TXT
 
 # Misc
 *.pyc

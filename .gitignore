@@ -25,7 +25,7 @@ Makefile
 
 # MuJoCo/GLFW/ROS2 generated
 *.mjb
-*.xml
+# *.xml
 *.stl
 *.obj
 *.dae

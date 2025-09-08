@@ -29,8 +29,6 @@ def generate_launch_description():
             executable = "mujoco_node",
             output     = "screen",
             arguments  = [LaunchConfiguration('scene'), LaunchConfiguration('model_name')],
-            # arguments  = [os.path.join(directory, 'models', 'rf2502_new_3', 'scene.xml'), 'rf2502'],
-            # arguments  = [os.path.join(directory, 'models', 'SO101', 'scene.xml'), 'SO101'],
             parameters = [   
                             {"joint_state_topic_name" : "joint_state"},
                             {"joint_command_topic_name" : "joint_commands"},

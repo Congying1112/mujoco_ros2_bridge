@@ -2,20 +2,35 @@ import os
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 
 def generate_launch_description():
 
     directory = get_package_share_directory('mujoco_ros2_bridge')
     
+    scene_arg = DeclareLaunchArgument(
+        'scene',
+        default_value=os.path.join(directory, 'models', 'SO101', 'scene.xml'),
+        description='Path to scene XML file'
+    )
+
+    model_name_arg = DeclareLaunchArgument(
+        'model_name',
+        default_value='SO101',
+        description='Model name to use'
+    )
+    
     return LaunchDescription([
+        scene_arg,
+        model_name_arg,
         Node(
             package    = "mujoco_ros2_bridge",
             executable = "mujoco_node",
             output     = "screen",
-            # arguments  = [os.path.join(directory, 'models', 'rf2502_new_3', 'rf2502_new_3.xml')],
-            # arguments  = [os.path.join(directory, 'models', 'rf2502_new_3', 'scene.xml')],
-            arguments  = [os.path.join(directory, 'models', 'SO101', 'scene.xml'), 'SO101'],
-            # arguments  = [os.path.join(directory, 'models', 'SO101', 'so101_new_calib.xml')],
+            arguments  = [LaunchConfiguration('scene'), LaunchConfiguration('model_name')],
+            # arguments  = [os.path.join(directory, 'models', 'rf2502_new_3', 'scene.xml'), 'rf2502'],
+            # arguments  = [os.path.join(directory, 'models', 'SO101', 'scene.xml'), 'SO101'],
             parameters = [   
                             {"joint_state_topic_name" : "joint_state"},
                             {"joint_command_topic_name" : "joint_commands"},

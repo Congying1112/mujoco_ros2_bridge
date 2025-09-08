@@ -26,14 +26,19 @@ ros2 run mujoco_ros2_bridge test_ctrl
 ros2 run mujoco_ros2_bridge test_ctrl <path_to_model.xml>
 ```
 ### start mujoco-ros2 bridge
-Start bridge with
+You can start bridge for the sample model with:
 ```bash
-ros2 launch mujoco_ros2_bridge start_bridge.py
+ros2 launch mujoco_ros2_bridge start.py
 ```
-Here's the result:
+or for your own model with:
+```bash
+ros2 launch mujoco_ros2_bridge start.py scene:=/path/to/your/scene.xml model_name:=your_model_name
+```
+
+Here's the result of the sample model:
 
 ```bash
-congying@ubuntu:~$ ros2 launch mujoco_ros2_bridge start_bridge.py
+congying@ubuntu:~$ ros2 launch mujoco_ros2_bridge start.py
 [INFO] [launch]: All log files can be found below /home/congying/.ros/log/2025-08-15-11-43-57-237203-ubuntu-1170371
 [INFO] [launch]: Default logging verbosity is set to INFO
 [INFO] [mujoco_node-1]: process started with pid [1170378]

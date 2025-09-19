@@ -58,7 +58,7 @@ congying@ubuntu:~$ ros2 launch mujoco_ros2_bridge start.py
 [INFO] [launch]: All log files can be found below /home/congying/.ros/log/2025-08-15-11-43-57-237203-ubuntu-1170371
 [INFO] [launch]: Default logging verbosity is set to INFO
 [INFO] [mujoco_node-1]: process started with pid [1170378]
-[mujoco_node-1] Model with 6 joints has been loaded: 
+[mujoco_node-1] Model with 6 actuators has been loaded: 
 [mujoco_node-1] [INFO] Setting zero position...
 [mujoco_node-1] [INFO] [1755229438.395368922] [mujoco_node]: MuJoCo node started with model file: /home/congying/workspace/ros2_ws/install/mujoco_ros2_bridge/share/mujoco_ros2_bridge/models/SO101/scene.xml
 ```
@@ -67,19 +67,27 @@ congying@ubuntu:~$ ros2 launch mujoco_ros2_bridge start.py
 Check ros2 topics
 ```bash
 congying@ubuntu:~$ ros2 topic list
-/joint_commands
+/actuator_commands
+/actuator_joint_state
 /joint_state
 /parameter_events
 /rosout
 ```
 Check joint_commands (which is used to control joints)
 ```bash
-congying@ubuntu:~$ ros2 topic info /joint_commands
+congying@ubuntu:~$ ros2 topic info /actuator_commands
 Type: std_msgs/msg/Float64MultiArray
 Publisher count: 0
 Subscription count: 1
 ```
-Check joint_state (which is used to publish joints' states)
+Check actuator_joint_state (which is used to publish actuator related joints' states)
+```bash
+congying@ubuntu:~$ ros2 topic info /actuator_joint_state
+Type: sensor_msgs/msg/JointState
+Publisher count: 1
+Subscription count: 0
+```
+Check joint_state (which is used to publish all joints' states)
 ```bash
 congying@ubuntu:~$ ros2 topic info /joint_state
 Type: sensor_msgs/msg/JointState
@@ -89,7 +97,7 @@ Subscription count: 0
 Use terminal command to communicate with the robot in MuJoCo
 1. subscribe to get joint state of the robot
 ```bash
-congying@ubuntu:~$ ros2 topic echo /joint_state
+congying@ubuntu:~$ ros2 topic echo /actuator_joint_state
 header:
   stamp:
     sec: 1755239031
@@ -128,7 +136,7 @@ effort:
 ```
 2. send message to position-control the robot joint
 ```bash
-congying@ubuntu:~$ ros2 topic pub /joint_commands std_msgs/msg/Float64MultiArray '{data: [0.5, -0.7, 0.0, 0.0, 0.0, 1.0]}'
+congying@ubuntu:~$ ros2 topic pub /actuator_commands std_msgs/msg/Float64MultiArray '{data: [0.5, -0.7, 0.0, 0.0, 0.0, 1.0]}'
 publisher: beginning loop
 publishing #1: std_msgs.msg.Float64MultiArray(layout=std_msgs.msg.MultiArrayLayout(dim=[], data_offset=0), data=[0.5, -0.7, 0.0, 0.0, 0.0, 1.0])
 publishing #2: std_msgs.msg.Float64MultiArray(layout=std_msgs.msg.MultiArrayLayout(dim=[], data_offset=0), data=[0.5, -0.7, 0.0, 0.0, 0.0, 1.0])

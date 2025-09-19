@@ -4,10 +4,11 @@ ClsMujocoNode::ClsMujocoNode(const std::string &model_file, const std::string &n
     : rclcpp::Node(node_name), mujoco_(std::make_shared<ClsMujoco>(model_file, node_name))
 {
     // Create joint state publisher and joint command subscriber
-    joint_command_subscriber_ = this->create_subscription<std_msgs::msg::Float64MultiArray>("joint_commands", 1,  std::bind(&ClsMujocoNode::joint_command_callback, this, std::placeholders::_1));
+    joint_command_subscriber_ = this->create_subscription<std_msgs::msg::Float64MultiArray>("actuator_commands", 1,  std::bind(&ClsMujocoNode::actuator_command_callback, this, std::placeholders::_1));
     joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("joint_state", 1);
+    actuator_joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("actuator_joint_state", 1);
 
-    state_pub_timer_ = this->create_wall_timer(std::chrono::milliseconds(static_cast<int>(1000 / state_pub_frequency_)),
+    joint_state_pub_timer_ = this->create_wall_timer(std::chrono::milliseconds(static_cast<int>(1000 / state_pub_frequency_)),
         [this]() {
             mujoco_->get_joint_state([this](int err, sensor_msgs::msg::JointState joint_state_msg, const std::string& cb_msg) {
                 if (err != 0) {
@@ -18,6 +19,17 @@ ClsMujocoNode::ClsMujocoNode(const std::string &model_file, const std::string &n
                 }
             });
         });
+    actuator_joint_state_pub_timer_ = this->create_wall_timer(std::chrono::milliseconds(static_cast<int>(1000 / state_pub_frequency_)),
+        [this]() {
+            mujoco_->get_actuator_joint_state([this](int err, sensor_msgs::msg::JointState actuator_joint_state_msg, const std::string& cb_msg) {
+                if (err != 0) {
+                    RCLCPP_ERROR(this->get_logger(), cb_msg.c_str());
+                } else {
+                    actuator_joint_state_msg.header.stamp = this->get_clock()->now();
+                    actuator_joint_state_publisher_->publish(actuator_joint_state_msg);
+                }
+            });
+        });
     viz_timer_ = this->create_wall_timer(std::chrono::milliseconds(static_cast<int>(1000 / viz_frequency_)),
                                         std::bind(&ClsMujoco::update_visualization, mujoco_));
 
@@ -25,8 +37,8 @@ ClsMujocoNode::ClsMujocoNode(const std::string &model_file, const std::string &n
     // mujoco_->start_testPositionControl(); // Start the test position control mode
 }
 
-void ClsMujocoNode::joint_command_callback(const std_msgs::msg::Float64MultiArray& msg) {
-    mujoco_->joint_command_callback(msg, [this](int err, const std::string& cb_msg) {
+void ClsMujocoNode::actuator_command_callback(const std_msgs::msg::Float64MultiArray& msg) {
+    mujoco_->actuator_command_callback(msg, [this](int err, const std::string& cb_msg) {
         if (err != 0) {
             RCLCPP_ERROR(this->get_logger(), cb_msg.c_str());
         } else {

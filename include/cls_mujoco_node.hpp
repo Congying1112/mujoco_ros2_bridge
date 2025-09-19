@@ -16,11 +16,13 @@ private:
     int viz_frequency_ = 10; // Hz
     rclcpp::TimerBase::SharedPtr viz_timer_;
     int state_pub_frequency_ = 10; // Hz
-    rclcpp::TimerBase::SharedPtr state_pub_timer_;
+    rclcpp::TimerBase::SharedPtr joint_state_pub_timer_;
+    rclcpp::TimerBase::SharedPtr actuator_joint_state_pub_timer_;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_publisher_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr actuator_joint_state_publisher_;
     rclcpp::Subscription<std_msgs::msg::Float64MultiArray>::SharedPtr joint_command_subscriber_;
 
-    void joint_command_callback(const std_msgs::msg::Float64MultiArray& msg);
+    void actuator_command_callback(const std_msgs::msg::Float64MultiArray& msg);
 };
 
 #endif // CLS_MUJOCO_NODE_HPP

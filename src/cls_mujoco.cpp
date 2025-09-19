@@ -36,7 +36,7 @@ ClsMujoco::ClsMujoco(const std::string &model_file, const std::string &name)
     }
     else
     {
-        cout << "Model with " << model_->nq << " joints has been loaded: " << endl;
+        cout << "Model with " << model_->nu << " actuators has been loaded: " << endl;
     }
 
     // make data
@@ -67,6 +67,12 @@ ClsMujoco::ClsMujoco(const std::string &model_file, const std::string &name)
     // create scene and context
     mjv_makeScene(model_, &scene_, 2000);
     mjr_makeContext(model_, &context_, mjFONTSCALE_150);
+
+    actuator_joint_state_msg_.name.resize(model_->nu);
+    actuator_joint_state_msg_.position.resize(model_->nu);
+    actuator_joint_state_msg_.velocity.resize(model_->nu);
+    actuator_joint_state_msg_.effort.resize(model_->nu);
+
 
     joint_state_msg_.name.resize(model_->nq);
     joint_state_msg_.position.resize(model_->nq);
@@ -133,15 +139,15 @@ void ClsMujoco::start_testPositionControl()
     cout << "[INFO] Starting test position control..." << endl;
     std::thread testThread([this]()
                            {
-        double joint_pos = 0.0;
+        double actuator_pos = 0.0;
         while (true) {
-            cout << "[INFO] Setting joints to: " << joint_pos << endl;
-            for (int i = 0; i < model_->nq; i++) {
-                // data_->qpos[i] = joint_pos;
-                // data_->qvel[i] = joint_pos;
-                data_->ctrl[i] = joint_pos;
+            cout << "[INFO] Setting actuators to: " << actuator_pos << endl;
+            for (int i = 0; i < model_->nu; i++) {
+                // data_->qpos[i] = actuator_pos;
+                // data_->qvel[i] = actuator_pos;
+                data_->ctrl[i] = actuator_pos;
             }
-            joint_pos += 0.03;
+            actuator_pos += 0.03;
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         } });
     testThread.detach();
@@ -150,7 +156,7 @@ void ClsMujoco::start_testPositionControl()
 void ClsMujoco::set_zero_pos()
 {
     cout << "[INFO] Setting zero position..." << endl;
-    for (int i = 0; i < model_->nq; i++)
+    for (int i = 0; i < model_->nu; i++)
     {
         data_->ctrl[i] = 0.0;
     }
@@ -206,7 +212,7 @@ void ClsMujoco::scroll(GLFWwindow *window, double xoffset, double yoffset)
     mjv_moveCamera(model_, mjMOUSE_ZOOM, 0, -0.05 * yoffset, &scene_, &camera_);
 }
 
-void ClsMujoco::joint_command_callback(const std_msgs::msg::Float64MultiArray &msg, std::function<void(int, const std::string &)> cb)
+void ClsMujoco::actuator_command_callback(const std_msgs::msg::Float64MultiArray &msg, std::function<void(int, const std::string &)> cb)
 {
     if (!model_ || !data_)
     {
@@ -214,9 +220,9 @@ void ClsMujoco::joint_command_callback(const std_msgs::msg::Float64MultiArray &m
         return;
     }
 
-    if (msg.data.size() != model_->nq)
+    if (msg.data.size() != model_->nu)
     {
-        cb(2, "Received joint command size does not match model's joint count.");
+        cb(2, "Received actuator command size does not match model's actuator count.");
         return;
     }
 
@@ -243,4 +249,23 @@ void ClsMujoco::get_joint_state(std::function<void(int, sensor_msgs::msg::JointS
         joint_state_msg_.effort[i] = data_->qfrc_actuator[i];
     }
     cb(0, joint_state_msg_, ""); // 默认msg为空字符串
+}
+
+void ClsMujoco::get_actuator_joint_state(std::function<void(int, sensor_msgs::msg::JointState, const std::string &)> cb)
+{
+    if (!model_ || !data_)
+    {
+        cb(1, actuator_joint_state_msg_, "MuJoCo model or data is not initialized.");
+        return;
+    }
+
+    // Add actuator state data to ROS2 message
+    for (int i = 0; i < model_->nu; ++i)
+    {
+        int joint_id = mj_name2id(model_, mjOBJ_JOINT, mj_id2name(model_, mjOBJ_ACTUATOR, i));
+        actuator_joint_state_msg_.position[i] = data_->qpos[joint_id];
+        actuator_joint_state_msg_.velocity[i] = data_->qvel[joint_id];
+        actuator_joint_state_msg_.effort[i] = data_->qfrc_actuator[joint_id];
+    }
+    cb(0, actuator_joint_state_msg_, ""); // 默认msg为空字符串
 }

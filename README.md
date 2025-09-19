@@ -4,10 +4,12 @@ This package bridges MuJoCo simulation with ROS2. It provides a C++ interface to
 
 
 ## Dependencies
-- Ubuntu 22.04 (Tested)
-- MuJoCo 3.3.5 (Installed at `/opt/mujoco`; Tested)
-- GLFW (Tested)
-- ROS2 humble (Tested)
+|Dependence(Version)|Installation|
+|-|-|
+|Ubuntu 22.04 (Tested)||
+|MuJoCo 3.3.5 (Tested)|Download from [MuJoCo](https://github.com/google-deepmind/mujoco/releases) <br>Unzip and installed under `/opt/mujoco`|
+|GLFW (Tested)|`sudo apt-get install libglfw3 libglfw3-dev`|
+|ROS2 humble (Tested)||
 
 ## Build
 

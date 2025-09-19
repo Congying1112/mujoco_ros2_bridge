@@ -13,9 +13,9 @@ This package bridges MuJoCo simulation with ROS2. It provides a C++ interface to
 - Download from [MuJoCo](https://github.com/google-deepmind/mujoco/releases), Unzip and installed under `/opt/mujoco`
 - Add followings to`~/.bashrc`
   ```bash
-  export MUJOCO_PY_MUJOCO_PATH=/opt/mujoco/mujoco-3.3.6
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/mujoco/mujoco-3.3.6/bin
-  export LD_LIBRARY_PATH=/opt/mujoco/mujoco-3.3.6/lib:$LD_LIBRARY_PATH
+  export MUJOCO_PY_MUJOCO_PATH=/opt/mujoco/mujoco-3.3.5
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/mujoco/mujoco-3.3.5/bin
+  export LD_LIBRARY_PATH=/opt/mujoco/mujoco-3.3.5/lib:$LD_LIBRARY_PATH
   ```
     </td>
   </tr>
